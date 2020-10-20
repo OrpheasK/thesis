@@ -31,7 +31,7 @@ def midi2keystrikes(filename,tracknum):
          
     return result
 	
-	
+#https://www.kaggle.com/wfaria/midi-music-data-extraction-using-music21
 def open_midi(midi_path, remove_tracks):
     # There is an one-line method to read MIDIs
     # but to remove the drums we need to manipulate some
@@ -119,6 +119,7 @@ def print_parts_countour(midi):
 # s.write("text", "C:/Users/Papias/Desktop/thesis/copy/midi/mademidi.txt")
 # print (d.offset)
 
+#based on https://colab.research.google.com/github/cpmpercussion/creative-prediction/blob/master/notebooks/3-zeldic-musical-RNN.ipynb
 stream_list = []
 for element in base_midi.parts[0].flat:
 	if isinstance(element, note.Note):
