@@ -4,6 +4,7 @@ lpd-17-cleansed dataset with genre data matched from id_lists_tagtraum.tar.gz
 
 Code used: -
 
+
 - Εξαγωγή ονμάτων φακέλων από το dataset για διασταύρωση IDs
 
 Δημιουργία txt (test2.txt) με τα ονόματα φακέλων του lpd_17_cleansed για σύγκριση με τα tagtraum IDs τύπου TR...
