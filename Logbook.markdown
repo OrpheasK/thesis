@@ -36,7 +36,7 @@ Code used: npztomidi.py, midiwav.py, midicsv.py
 
 Code used: midi21txt.py, txtmidi21.py
 
--Πρώτα πειράματα Μηχανικής Μάθησης
+- Πρώτα πειράματα Μηχανικής Μάθησης
 
 Χρήση του Keras Functional API
 
