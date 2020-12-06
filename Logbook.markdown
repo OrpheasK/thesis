@@ -35,3 +35,11 @@ Code used: npztomidi.py, midiwav.py, midicsv.py
 Μετατροπή της csv μορφής σε midi file
 
 Code used: midi21txt.py, txtmidi21.py
+
+-Πρώτα πειράματα Μηχανικής Μάθησης
+
+Χρήση του Keras Functional API
+
+Σχεδίαση autoencoder, χρήση teacher forcing αλγορίθμου
+
+Code used: fun.ipynb, funaut.ipynb, funtfrc.ipynb, tfrc_ptch.ipynb
