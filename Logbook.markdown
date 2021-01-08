@@ -43,3 +43,13 @@ Code used: midi21txt.py, txtmidi21.py
 Σχεδίαση autoencoder, χρήση teacher forcing αλγορίθμου
 
 Code used: fun.ipynb, funaut.ipynb, funtfrc.ipynb, tfrc_ptch.ipynb
+
+- Ολοκλήρωση πρώτου Μοντέλου Autoencoder
+
+Seq2seq autoencoder με teacher forcing, κωδικοποίηση διανυσμάτων (offset, quarterlength, pitch) σε (0-1, 0-1, ohe)
+
+Upload ολόκληρου Rock Dataset σε Kaggle και πρώτες εφαρμογές του μοντέλου σε όλα τα αρχεία με χρήση generator
+
+Πειράματα με παραλλαγές του μοντέλου και περιορισμό τιμών των offset, quarterlength
+
+Code used: funtfrcgen.ipynb, funtfrc_gru.ipynb, funtfrc3d.ipynb, funtfrc_ohe.ipynb, histogram.ipynb
