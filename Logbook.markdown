@@ -53,3 +53,15 @@ Upload ολόκληρου Rock Dataset σε Kaggle και πρώτες εφαρ�
 Πειράματα με παραλλαγές του μοντέλου και περιορισμό τιμών των offset, quarterlength
 
 Code used: funtfrcgen.ipynb, funtfrc_gru.ipynb, funtfrc3d.ipynb, funtfrc_ohe.ipynb, histogram.ipynb
+
+- Πρώτες εφαρμογές μοντέλου σε ευρύτερα δεδομένα
+
+Διεύρυνση υπάρχοντων δεδομένων με Lastfm labels
+
+Χρήση GPU μέσω server NTUA
+
+Δοκιμές με κωδικοποίηση συνεχόμενων τιμών και ohe
+
+Εκπαίδευση σε είδη Rock και Jazz με data 650-700 κομμάτια (~1.000.000 instances)
+
+Code used: ftg-2dec-check-ns.py, ftg-2dec-ns, ftg-2dec-ohe-check-ns, ftg-2dec-ohe-load-ns, ftg-2dec-ohe-ns
