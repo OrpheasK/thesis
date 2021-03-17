@@ -12,11 +12,19 @@ def open_midi(midi_path, remove_tracks):
     mf.open(midi_path)
     mf.read()
     mf.close()
+    sumtime = 0
     if (remove_tracks):
         for i in range(len(mf.tracks)):
-            mf.tracks[i].events = [ev for ev in mf.tracks[i].events if ev.channel != 10]          
-
-    return midi.translate.midiFileToStream(mf)
+            mf.tracks[i].events = [ev for ev in mf.tracks[i].events if ev.channel != 10]
+            if (mf.tracks[i].events[-3].type == midi.ChannelVoiceMessages.NOTE_ON): sumtime +=1 			
+    
+    if (sumtime==0): 
+        print ('breaka')
+        mfstr = None
+    else:
+        mfstr = midi.translate.midiFileToStream(mf)
+		
+    return mfstr
     
 # temp_midi_chords = open_midi("C:/Users/Papias/Desktop/thesis/copy/midi/midi.mid",True).chordify()
 # base_midi = stream.Score()
@@ -42,11 +50,12 @@ def textpr(b_midi, fname):
 
 	stream_list = sorted(stream_list, key=itemgetter(0))
 
-	with open("C:/Users/Papias/Desktop/thesis/copy/midi/midi21txt/" + fname[:-4] + ".txt", "w", newline="") as f:
+	with open("C:/Users/Papias/Desktop/thesis/copy/midi/midi21txt/lastfm/techno_cleansed/" + fname[:-4] + ".txt", "w", newline="") as f:
 		writer = csv.writer(f)
 		writer.writerows(stream_list)
 	
-for directory, subdirectories, files in os.walk('C:/Users/Papias/Desktop/thesis/copy/midi/Rock_Cleansed'):
+for directory, subdirectories, files in os.walk('C:/Users/Papias/Desktop/thesis/copy/midi/lastfm/techno_cleansed'):
     for file in files:
         base_midi = open_midi(os.path.abspath(os.path.join(directory, file)), True) #open and remove drums
-        textpr(base_midi, file)
+        if (base_midi != None):
+	        textpr(base_midi, file)
