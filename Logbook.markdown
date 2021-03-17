@@ -62,6 +62,6 @@ Code used: funtfrcgen.ipynb, funtfrc_gru.ipynb, funtfrc3d.ipynb, funtfrc_ohe.ipy
 
 Δοκιμές με κωδικοποίηση συνεχόμενων τιμών και ohe
 
-Εκπαίδευση σε είδη Rock και Jazz με data 650-700 κομμάτια (~1.000.000 instances)
+Εκπαίδευση σε είδη Rock και Jazz με data 650-700 κομμάτια (~2.000.000 instances)
 
 Code used: ftg-2dec-check-ns.py, ftg-2dec-ns, ftg-2dec-ohe-check-ns, ftg-2dec-ohe-load-ns, ftg-2dec-ohe-ns
