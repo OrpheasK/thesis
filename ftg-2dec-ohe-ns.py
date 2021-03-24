@@ -193,7 +193,7 @@ def generatorex(features1, features2, features3, seq_length, ft_o, ft_q, ft_p, m
             batch_features3[b] = to_categorical(features3[i], num_classes=ft_p)
             batch_feat_pad1[b] = to_categorical(np.append([m_o+.25], [q_to_i[ql[0]] for ql in features1[i][:-1]]).reshape(seq_length, 1), num_classes=ft_o)
             batch_feat_pad2[b] = to_categorical(np.append([m_q+.25], [q_to_i[ql[0]] for ql in features2[i][:-1]]).reshape(seq_length, 1), num_classes=ft_q)
-            batch_feat_pad3[b] = to_categorical(np.append([0], features3[i][:-1]).reshape(seq_length, 1), num_classes=ft_p)
+            batch_feat_pad3[b] = to_categorical(np.append([128], features3[i][:-1]).reshape(seq_length, 1), num_classes=ft_p)
             i += 1
             if (i == len(features1)):
                 i=0
@@ -208,14 +208,14 @@ def generatorex(features1, features2, features3, seq_length, ft_o, ft_q, ft_p, m
 stream_list = []
 stream_list_2 = []
 
-for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/Rock_Cleansed/678'):
+for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/Rock_Cleansed/4'):
     for name in files:
         with open(os.path.join(path, name), 'r') as f: 
             reader = csv.reader(f)
             sub_list = [list(map(float,rec)) for rec in csv.reader(f, delimiter=',')]
             stream_list = stream_list + sub_list
             
-for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/lastfm/jazz_cleansed'):
+for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/Jazz_Cleansed'):
     for name in files:
         with open(os.path.join(path, name), 'r') as f: 
             reader = csv.reader(f)
@@ -265,8 +265,8 @@ for row in stream_list_2:
 dtlngth=[len(offs), len(offs_2)]
 n_features_o = int(max_o)*6+2
 n_features_q = int(max_q)*6+2
-n_features_p = 127+1
-seq_length = 30#100 groups of 3
+n_features_p = 128+1
+seq_length = 4#100 groups of 3
 
 dataX1_o = rolling_window(np.asarray(offs), seq_length)
 dataX1_q = rolling_window(np.asarray(qlngth), seq_length)
@@ -339,7 +339,7 @@ train_2.compile(optimizer='adam', loss={'tr_out_o_2': 'categorical_crossentropy'
 
 
 # train the two models with alternating epochs
-epochs_c = 20
+epochs_c = 10
 for i in range(epochs_c):
     print ("Epoch", str(i+1)+"_a")
     history1 = train.fit(generatorex(dataX1_o, dataX1_q, dataX1_p, seq_length, n_features_o, n_features_q, n_features_p, max_o, max_q, batch_size=540), steps_per_epoch= (dtlngth[0]-split_i[0]) // 540, verbose=2)
