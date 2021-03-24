@@ -8,12 +8,15 @@ import csv
 import os
 import numpy as np
 from random import randint
-import matplotlib.pyplot as plt
+from math import trunc
+import pickle
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 from tensorflow import keras
 from keras.utils import to_categorical
+from sklearn.metrics import accuracy_score
 from keras.models import Model, load_model
 from keras.layers import Input, LSTM, Dense, RepeatVector, TimeDistributed, concatenate
-
 
 # In[2]:
 
@@ -104,7 +107,7 @@ def generatorex(features1, features2, features3, seq_length, ft_o, ft_q, ft_p, m
             if (i == len(features1)):
                 i=0
         #print(batch_features, batch_labels)
-        yield [batch_features1, batch_features2, batch_features3, batch_feat_pad1, batch_feat_pad2, batch_feat_pad3], [batch_features1, batch_features2, batch_features3]
+        yield [batch_features1, batch_features2, batch_features3]
 
 
 # In[4]:
@@ -114,7 +117,7 @@ def generatorex(features1, features2, features3, seq_length, ft_o, ft_q, ft_p, m
 stream_list = []
 stream_list_2 = []
 
-for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/Rock_Cleansed/1'):
+for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/Rock_Cleansed/4'):
     for name in files:
         with open(os.path.join(path, name), 'r') as f: 
             reader = csv.reader(f)
@@ -171,8 +174,8 @@ for row in stream_list_2:
 dtlngth=[len(offs), len(offs_2)]
 n_features_o = int(max_o)*6+2
 n_features_q = int(max_q)*6+2
-n_features_p = 127+1
-seq_length = 20#100 groups of 3
+n_features_p = 128+1
+seq_length = 4#100 groups of 3
 
 dataX1_o = rolling_window(np.asarray(offs), seq_length)
 dataX1_q = rolling_window(np.asarray(qlngth), seq_length)
@@ -236,9 +239,10 @@ n_units = 128
 # In[17]:
 
 
-train = load_model("/data/data1/users/el13102/train.h5")
-train_2 = load_model("/data/data1/users/el13102/train_2.h5")
-
+train = load_model("/data/data1/users/el13102/weight/train.h5")
+train_2 = load_model("/data/data1/users/el13102/weight/train_2.h5")
+infenc_tr = load_model("/data/data1/users/el13102/weight/infenc.h5")
+infdec_tr = load_model("/data/data1/users/el13102/weight/infdec.h5")
 
 encoder_inputs_o = train.input[0]   # input_1 concat
 encoder_inputs_q = train.input[1]
@@ -251,9 +255,9 @@ infenc = Model([encoder_inputs_o, encoder_inputs_q, encoder_inputs_p], encoder_s
 decoder_inputs_o = train.input[3]   # input_2 concat
 decoder_inputs_q = train.input[4]
 decoder_inputs_p = train.input[5]
-decoder_inputs = train.layers[7]
-decoder_state_input_h = Input(shape=(n_units,), name='input_3')
-decoder_state_input_c = Input(shape=(n_units,), name='input_4')
+decoder_inputs = train.layers[7].output
+decoder_state_input_h = Input(shape=(n_units,), name='input_12')
+decoder_state_input_c = Input(shape=(n_units,), name='input_13')
 decoder_states_inputs = [decoder_state_input_h, decoder_state_input_c]
 decoder_lstm = train.layers[9]
 decoder_outputs, state_h_dec, state_c_dec = decoder_lstm(decoder_inputs, initial_state=decoder_states_inputs)
@@ -270,9 +274,9 @@ infdec = Model([decoder_inputs_o, decoder_inputs_q, decoder_inputs_p] + decoder_
 decoder_inputs_o_2 = train_2.input[3]   # input_2 concat
 decoder_inputs_q_2 = train_2.input[4] 
 decoder_inputs_p_2 = train_2.input[5] 
-decoder_inputs_2 = train_2.layers[7]
-decoder_state_input_h_2 = Input(shape=(n_units,), name='input_5')
-decoder_state_input_c_2 = Input(shape=(n_units,), name='input_6')
+decoder_inputs_2 = train_2.layers[7].output
+decoder_state_input_h_2 = Input(shape=(n_units,), name='input_14')
+decoder_state_input_c_2 = Input(shape=(n_units,), name='input_15')
 decoder_states_inputs_2 = [decoder_state_input_h_2, decoder_state_input_c_2]
 decoder_lstm_2 = train_2.layers[9]
 decoder_outputs_2, state_h_dec_2, state_c_dec_2 = decoder_lstm_2(decoder_inputs_2, initial_state=decoder_states_inputs_2)
@@ -286,29 +290,34 @@ decoder_outputs_p_2 = decoder_dense_p_2(decoder_outputs_2)
 
 infdec_2 = Model([decoder_inputs_o_2, decoder_inputs_q_2, decoder_inputs_p_2] + decoder_states_inputs_2, [decoder_outputs_o_2, decoder_outputs_q_2, decoder_outputs_p_2] + decoder_states_2)
 
-# retrieve:    
-f1 = open('history1.pckl', 'rb')
+
+
+# In[18]:
+f1 = open('/data/data1/users/el13102/weight/history1.pckl', 'rb')
 history1 = pickle.load(f1)
 f1.close()
+f2 = open('/data/data1/users/el13102/weight/history2.pckl', 'rb')
+history2 = pickle.load(f2)
+f2.close()
 
-history1['tr_out_o_accuracy'][0]
-# In[18]:
+print(history1)
+print(history2)
 
 
 # spot check some examples
 ql_to_int = qldir(max_o, True)
 int_to_ql = qldir(max_o, False)
-for _ in range(2):
-    i = randint(1, split_i[0])
-    X1_o = np.reshape(to_categorical([ql_to_int[ql[0]] for ql in dataX1_o_v[i]], num_classes=n_features_o), (1, seq_length, n_features_o))
-    X1_q = np.reshape(to_categorical([ql_to_int[ql[0]] for ql in dataX1_q_v[i]], num_classes=n_features_q), (1, seq_length, n_features_q))
-    X1_p = np.reshape(to_categorical(dataX1_p_v[i], num_classes=n_features_p), (1, seq_length, n_features_p))
-    target = predict_sequence(infenc, infdec, X1_o, X1_q, X1_p, n_steps_out, n_features_o, n_features_q, n_features_p)
+for i in range(1):
+    i_2 = randint(1, split_i[0])
+    X1_o = np.reshape(to_categorical([ql_to_int[ql[0]] for ql in dataX1_o[i]], num_classes=n_features_o), (1, seq_length, n_features_o))
+    X1_q = np.reshape(to_categorical([ql_to_int[ql[0]] for ql in dataX1_q[i]], num_classes=n_features_q), (1, seq_length, n_features_q))
+    X1_p = np.reshape(to_categorical(dataX1_p[i], num_classes=n_features_p), (1, seq_length, n_features_p))
+    target = predict_sequence(infenc_tr, infdec_tr, X1_o, X1_q, X1_p, n_steps_out, n_features_o, n_features_q, n_features_p)
     for j in range(seq_length):
         print('X_o=%s, y_o=%s, X_q=%s, y_q=%s, X_p=%s, y_p=%s' % (
-            dataX1_o_v[i][j], int_to_ql[one_hot_decode([target[3*j]])[0]], 
-            dataX1_q_v[i][j], int_to_ql[one_hot_decode([target[3*j+1]])[0]], 
-            dataX1_p_v[i][j], one_hot_decode([target[3*j+2]])))
+            dataX1_o[i][j], int_to_ql[one_hot_decode([target[3*j]])[0]], 
+            dataX1_q[i][j], int_to_ql[one_hot_decode([target[3*j+1]])[0]], 
+            dataX1_p[i][j], one_hot_decode([target[3*j+2]])))
     print()
 
 
@@ -318,12 +327,12 @@ for _ in range(2):
 # spot check some examples
 ql_to_int = qldir(max_o, True)
 int_to_ql = qldir(max_o, False)
-for _ in range(2):
+for _ in range(0):
     i = randint(1, split_i[1])
     X1_o = np.reshape(to_categorical([ql_to_int[ql[0]] for ql in dataX1_o_v_2[i]], num_classes=n_features_o), (1, seq_length, n_features_o))
     X1_q = np.reshape(to_categorical([ql_to_int[ql[0]] for ql in dataX1_q_v_2[i]], num_classes=n_features_q), (1, seq_length, n_features_q))
     X1_p = np.reshape(to_categorical(dataX1_p_v_2[i], num_classes=n_features_p), (1, seq_length, n_features_p))
-    target = predict_sequence(infenc, infdec, X1_o, X1_q, X1_p, n_steps_out, n_features_o, n_features_q, n_features_p)
+    target = predict_sequence(infenc, infdec_2, X1_o, X1_q, X1_p, n_steps_out, n_features_o, n_features_q, n_features_p)
     for j in range(seq_length):
         print('X_o=%s, y_o=%s, X_q=%s, y_q=%s, X_p=%s, y_p=%s' % (
             dataX1_o_v_2[i][j], int_to_ql[one_hot_decode([target[3*j]])[0]], 
@@ -332,8 +341,36 @@ for _ in range(2):
     print()
 
 
-# In[ ]:
+#value = train.evaluate(generatorex(dataX1_o, dataX1_q, dataX1_p, seq_length, n_features_o, n_features_q, n_features_p, max_o, max_q, batch_size=540), steps= (dtlngth[0]-split_i[0]) // 540, verbose=2)
 
 
+#value_2 = train_2.evaluate(generatorex(dataX1_o_2, dataX1_q_2, dataX1_p_2, seq_length, n_features_o, n_features_q, n_features_p, max_o, max_q, batch_size=540), steps= (dtlngth[0]-split_i[0]) // 540, verbose=2)
 
 
+pred_range = 1
+X_pred_o = []
+X_pred_q = []
+X_pred_p = []
+for i in range(pred_range):
+    X1_o = np.reshape(to_categorical([ql_to_int[ql[0]] for ql in dataX1_o[i]], num_classes=n_features_o), (1, seq_length, n_features_o))
+    X1_q = np.reshape(to_categorical([ql_to_int[ql[0]] for ql in dataX1_q[i]], num_classes=n_features_q), (1, seq_length, n_features_q))
+    X1_p = np.reshape(to_categorical(dataX1_p[i], num_classes=n_features_p), (1, seq_length, n_features_p))
+    target = predict_sequence(infenc, infdec, X1_o, X1_q, X1_p, n_steps_out, n_features_o, n_features_q, n_features_p)
+    for j in range(seq_length):
+        X_pred_o = X_pred_o + [int_to_ql[one_hot_decode([target[3*j]])[0]]] 
+        X_pred_q = X_pred_q + [int_to_ql[one_hot_decode([target[3*j+1]])[0]]] 
+        X_pred_p = X_pred_p + [one_hot_decode([target[3*j+2]])]
+
+X_pred_o = np.reshape(X_pred_o, (pred_range, seq_length, 1))
+X_pred_q = np.reshape(X_pred_q, (pred_range, seq_length, 1))
+X_pred_p = np.reshape(X_pred_p, (pred_range, seq_length, 1))
+X_pred = np.array([X_pred_o, X_pred_q, X_pred_p])
+X_inp = np.array([dataX1_o[:pred_range], dataX1_q[:pred_range], dataX1_p[:pred_range]])
+print("Evaluating", pred_range)
+print(X_inp, X_pred)
+number_of_equal_elements = np.sum(X_inp==X_pred)
+total_elements = 3*pred_range*seq_length
+percentage = number_of_equal_elements/total_elements
+print('number of identical elements: \t\t{}'.format(number_of_equal_elements))
+print('total number of elements: \t\t{}'.format(total_elements))
+print('percentage of identical elements: \t{:.2f}%'.format(percentage*100))
