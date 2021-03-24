@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from tensorflow import keras
 from keras.utils import to_categorical
 from keras.models import Model, load_model
+from keras.layers import Input, LSTM, Dense, RepeatVector, TimeDistributed, concatenate
 
 
 # In[2]:
@@ -231,19 +232,66 @@ print ("Validation Patterns: ", split_i)
 # configure problem
 n_steps_out = seq_length
 
-
+n_units = 128
 # In[17]:
 
 
 train = load_model("/data/data1/users/el13102/train.h5")
 train_2 = load_model("/data/data1/users/el13102/train_2.h5")
-infenc = load_model("/data/data1/users/el13102/infenc.h5", compile=False)
-infdec = load_model('/data/data1/users/el13102/infdec.h5', compile=False)
-infdec_2 = load_model('/data/data1/users/el13102/infdec_2.h5', compile=False)
 
 
+encoder_inputs_o = train.input[0]   # input_1 concat
+encoder_inputs_q = train.input[1]
+encoder_inputs_p = train.input[2]
+encoder_outputs, state_h_enc, state_c_enc = train.layers[8].output   # lstm_1
+encoder_states = [state_h_enc, state_c_enc]
 
+infenc = Model([encoder_inputs_o, encoder_inputs_q, encoder_inputs_p], encoder_states)
 
+decoder_inputs_o = train.input[3]   # input_2 concat
+decoder_inputs_q = train.input[4]
+decoder_inputs_p = train.input[5]
+decoder_inputs = train.layers[7]
+decoder_state_input_h = Input(shape=(n_units,), name='input_3')
+decoder_state_input_c = Input(shape=(n_units,), name='input_4')
+decoder_states_inputs = [decoder_state_input_h, decoder_state_input_c]
+decoder_lstm = train.layers[9]
+decoder_outputs, state_h_dec, state_c_dec = decoder_lstm(decoder_inputs, initial_state=decoder_states_inputs)
+decoder_states = [state_h_dec, state_c_dec]
+decoder_dense_o = train.layers[-3]
+decoder_dense_q = train.layers[-2]
+decoder_dense_p = train.layers[-1]
+decoder_outputs_o = decoder_dense_o(decoder_outputs)
+decoder_outputs_q = decoder_dense_q(decoder_outputs)
+decoder_outputs_p = decoder_dense_p(decoder_outputs)
+
+infdec = Model([decoder_inputs_o, decoder_inputs_q, decoder_inputs_p] + decoder_states_inputs, [decoder_outputs_o, decoder_outputs_q, decoder_outputs_p] + decoder_states)
+
+decoder_inputs_o_2 = train_2.input[3]   # input_2 concat
+decoder_inputs_q_2 = train_2.input[4] 
+decoder_inputs_p_2 = train_2.input[5] 
+decoder_inputs_2 = train_2.layers[7]
+decoder_state_input_h_2 = Input(shape=(n_units,), name='input_5')
+decoder_state_input_c_2 = Input(shape=(n_units,), name='input_6')
+decoder_states_inputs_2 = [decoder_state_input_h_2, decoder_state_input_c_2]
+decoder_lstm_2 = train_2.layers[9]
+decoder_outputs_2, state_h_dec_2, state_c_dec_2 = decoder_lstm_2(decoder_inputs_2, initial_state=decoder_states_inputs_2)
+decoder_states_2 = [state_h_dec_2, state_c_dec_2]
+decoder_dense_o_2 = train_2.layers[-3]
+decoder_dense_q_2 = train_2.layers[-2]
+decoder_dense_p_2 = train_2.layers[-1]
+decoder_outputs_o_2 = decoder_dense_o_2(decoder_outputs_2)
+decoder_outputs_q_2 = decoder_dense_q_2(decoder_outputs_2)
+decoder_outputs_p_2 = decoder_dense_p_2(decoder_outputs_2)
+
+infdec_2 = Model([decoder_inputs_o_2, decoder_inputs_q_2, decoder_inputs_p_2] + decoder_states_inputs_2, [decoder_outputs_o_2, decoder_outputs_q_2, decoder_outputs_p_2] + decoder_states_2)
+
+# retrieve:    
+f1 = open('history1.pckl', 'rb')
+history1 = pickle.load(f1)
+f1.close()
+
+history1['tr_out_o_accuracy'][0]
 # In[18]:
 
 

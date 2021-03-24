@@ -16,6 +16,7 @@ import gc
 import numpy as np
 import tensorflow as tf
 from random import randint
+import pickle
 from math import trunc
 from tensorflow import keras
 from keras.utils import np_utils, plot_model, to_categorical
@@ -207,14 +208,14 @@ def generatorex(features1, features2, features3, seq_length, ft_o, ft_q, ft_p, m
 stream_list = []
 stream_list_2 = []
 
-for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/Rock_Cleansed/1'):
+for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/Rock_Cleansed/678'):
     for name in files:
         with open(os.path.join(path, name), 'r') as f: 
             reader = csv.reader(f)
             sub_list = [list(map(float,rec)) for rec in csv.reader(f, delimiter=',')]
             stream_list = stream_list + sub_list
             
-for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/Jazz_Cleansed'):
+for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/lastfm/jazz_cleansed'):
     for name in files:
         with open(os.path.join(path, name), 'r') as f: 
             reader = csv.reader(f)
@@ -265,7 +266,7 @@ dtlngth=[len(offs), len(offs_2)]
 n_features_o = int(max_o)*6+2
 n_features_q = int(max_q)*6+2
 n_features_p = 127+1
-seq_length = 20#100 groups of 3
+seq_length = 30#100 groups of 3
 
 dataX1_o = rolling_window(np.asarray(offs), seq_length)
 dataX1_q = rolling_window(np.asarray(qlngth), seq_length)
@@ -349,12 +350,19 @@ for i in range(epochs_c):
 # In[ ]:
 
 
-train.save("/data/data1/users/el13102/train.h5")
-train_2.save("/data/data1/users/el13102/train_2.h5")
-infenc.save("/data/data1/users/el13102/infencb.h5")
-infdec.save("/data/data1/users/el13102/infdecb.h5")
-infdec_2.save("/data/data1/users/el13102/infdec_2b.h5")
+train.save("/data/data1/users/el13102/weight/train.h5")
+train_2.save("/data/data1/users/el13102/weight/train_2.h5")
+infenc.save("/data/data1/users/el13102/weight/infenc.h5")
+infdec.save("/data/data1/users/el13102/weight/infdec.h5")
+infdec_2.save("/data/data1/users/el13102/weight/infdec_2.h5")
 
+# save:
+f1 = open('/data/data1/users/el13102/weight/history1.pckl', 'wb')
+pickle.dump(history1.history, f1)
+f1.close()
 
+f2 = open('/data/data1/users/el13102/weight/history2.pckl', 'wb')
+pickle.dump(history2.history, f2)
+f2.close()
 
 
