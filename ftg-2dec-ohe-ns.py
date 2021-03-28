@@ -95,7 +95,7 @@ def define_models(dim_o, dim_q, dim_p, n_units):
 	# define inference decoder 2
 	decoder_state_input_h_2 = Input(shape=(n_units,))
 	decoder_state_input_c_2 = Input(shape=(n_units,))
-	decoder_states_inputs_2 = [decoder_state_input_h, decoder_state_input_c_2]
+	decoder_states_inputs_2 = [decoder_state_input_h_2, decoder_state_input_c_2]
 	decoder_outputs_2, state_h_2, state_c_2 = decoder_lstm_2(decoder_inputs_2, initial_state=decoder_states_inputs_2)
 	decoder_states_2 = [state_h_2, state_c_2]
 	#out_o = TimeDistributed(Dense(1, activation='relu'))(decoder_outputs)#act relu
@@ -191,8 +191,8 @@ def generatorex(features1, features2, features3, seq_length, ft_o, ft_q, ft_p, m
             batch_features1[b] = to_categorical([q_to_i[ql[0]] for ql in features1[i]], num_classes=ft_o)
             batch_features2[b] = to_categorical([q_to_i[ql[0]] for ql in features2[i]], num_classes=ft_q)
             batch_features3[b] = to_categorical(features3[i], num_classes=ft_p)
-            batch_feat_pad1[b] = to_categorical(np.append([m_o+.25], [q_to_i[ql[0]] for ql in features1[i][:-1]]).reshape(seq_length, 1), num_classes=ft_o)
-            batch_feat_pad2[b] = to_categorical(np.append([m_q+.25], [q_to_i[ql[0]] for ql in features2[i][:-1]]).reshape(seq_length, 1), num_classes=ft_q)
+            batch_feat_pad1[b] = to_categorical(np.append([ft_o-1], [q_to_i[ql[0]] for ql in features1[i][:-1]]).reshape(seq_length, 1), num_classes=ft_o)
+            batch_feat_pad2[b] = to_categorical(np.append([ft_q-1], [q_to_i[ql[0]] for ql in features2[i][:-1]]).reshape(seq_length, 1), num_classes=ft_q)
             batch_feat_pad3[b] = to_categorical(np.append([128], features3[i][:-1]).reshape(seq_length, 1), num_classes=ft_p)
             i += 1
             if (i == len(features1)):
@@ -208,14 +208,14 @@ def generatorex(features1, features2, features3, seq_length, ft_o, ft_q, ft_p, m
 stream_list = []
 stream_list_2 = []
 
-for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/Rock_Cleansed/4'):
+for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/Rock_Cleansed/678'):
     for name in files:
         with open(os.path.join(path, name), 'r') as f: 
             reader = csv.reader(f)
             sub_list = [list(map(float,rec)) for rec in csv.reader(f, delimiter=',')]
             stream_list = stream_list + sub_list
             
-for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/Jazz_Cleansed'):
+for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/lastfm/jazz_cleansed'):
     for name in files:
         with open(os.path.join(path, name), 'r') as f: 
             reader = csv.reader(f)
@@ -266,7 +266,7 @@ dtlngth=[len(offs), len(offs_2)]
 n_features_o = int(max_o)*6+2
 n_features_q = int(max_q)*6+2
 n_features_p = 128+1
-seq_length = 4#100 groups of 3
+seq_length = 30#100 groups of 3
 
 dataX1_o = rolling_window(np.asarray(offs), seq_length)
 dataX1_q = rolling_window(np.asarray(qlngth), seq_length)
@@ -352,9 +352,6 @@ for i in range(epochs_c):
 
 train.save("/data/data1/users/el13102/weight/train.h5")
 train_2.save("/data/data1/users/el13102/weight/train_2.h5")
-infenc.save("/data/data1/users/el13102/weight/infenc.h5")
-infdec.save("/data/data1/users/el13102/weight/infdec.h5")
-infdec_2.save("/data/data1/users/el13102/weight/infdec_2.h5")
 
 # save:
 f1 = open('/data/data1/users/el13102/weight/history1.pckl', 'wb')

@@ -23,34 +23,38 @@ from keras.layers import Input, LSTM, Dense, RepeatVector, TimeDistributed, conc
 
 # generate target given source sequence
 def predict_sequence(infenc, infdec, src_o, src_q, src_p, n_steps, cardinality_o, cardinality_q, cardinality_p):
-	# encode
-	state = infenc.predict([src_o, src_q, src_p])
-	# start of sequence input
-	target_o = np.array([0.0 for _ in range(cardinality_o)]).reshape(1, 1, cardinality_o)
-	target_q = np.array([0.0 for _ in range(cardinality_q)]).reshape(1, 1, cardinality_q)
-	#target_p = 0
-	target_p = np.array([0.0 for _ in range(cardinality_p)]).reshape(1, 1, cardinality_p)
-	# collect predictions
-	output = list()
-	for t in range(n_steps):
-		# predict next char
-		#print(target_o.shape)
-		#print(target_q.shape)
-		#print(target_p.shape)
-		#print(state[0].shape)
-		o, q, p, h, c = infdec.predict([target_o, target_q, target_p] + state)
-		#print(a)
-		# store prediction
-		output.append(o[0,0,:])
-		output.append(q[0,0,:])
-		output.append(p[0,0,:])
-		# update state
-		state = [h, c]
-		# update target sequence
-		target_o = o
-		target_q = q
-		target_p = p
-	return output
+     # encode
+        state = infenc.predict([src_o, src_q, src_p])
+        # start of sequence input
+        target_o = np.array([0.0 for _ in range(cardinality_o)]).reshape(1, 1, cardinality_o)
+        target_q = np.array([0.0 for _ in range(cardinality_q)]).reshape(1, 1, cardinality_q)
+        #target_p = 0
+        target_p = np.array([0.0 for _ in range(cardinality_p)]).reshape(1, 1, cardinality_p)
+        target_o[0][0] = to_categorical([cardinality_o-1], num_classes=cardinality_o)
+        target_q[0][0] = to_categorical([cardinality_q-1], num_classes=cardinality_q)
+        target_p[0][0] = to_categorical([128], num_classes=cardinality_p)
+        
+        # collect predictions
+        output = list()
+        for t in range(n_steps):
+                # predict next char
+                #print(target_o.shape)
+                #print(target_q.shape)
+                #print(target_p.shape)
+                #print(state[0].shape)
+                o, q, p, h, c = infdec.predict([target_o, target_q, target_p] + state)
+                #print(a)
+                # store prediction
+                output.append(o[0,0,:])
+                output.append(q[0,0,:])
+                output.append(p[0,0,:])
+                # update state
+                state = [h, c]
+                # update target sequence
+                target_o = o
+                target_q = q
+                target_p = p
+        return output
 
 # decode a one hot encoded string
 def one_hot_decode(encoded_seq):
@@ -100,9 +104,9 @@ def generatorex(features1, features2, features3, seq_length, ft_o, ft_q, ft_p, m
             batch_features1[b] = to_categorical([q_to_i[ql[0]] for ql in features1[i]], num_classes=ft_o)
             batch_features2[b] = to_categorical([q_to_i[ql[0]] for ql in features2[i]], num_classes=ft_q)
             batch_features3[b] = to_categorical(features3[i], num_classes=ft_p)
-            batch_feat_pad1[b] = to_categorical(np.append([m_o+.25], [q_to_i[ql[0]] for ql in features1[i][:-1]]).reshape(seq_length, 1), num_classes=ft_o)
-            batch_feat_pad2[b] = to_categorical(np.append([m_q+.25], [q_to_i[ql[0]] for ql in features2[i][:-1]]).reshape(seq_length, 1), num_classes=ft_q)
-            batch_feat_pad3[b] = to_categorical(np.append([0], features3[i][:-1]).reshape(seq_length, 1), num_classes=ft_p)
+            batch_feat_pad1[b] = to_categorical(np.append([ft_o-1], [q_to_i[ql[0]] for ql in features1[i][:-1]]).reshape(seq_length, 1), num_classes=ft_o)
+            batch_feat_pad2[b] = to_categorical(np.append([ft_o-1], [q_to_i[ql[0]] for ql in features2[i][:-1]]).reshape(seq_length, 1), num_classes=ft_q)
+            batch_feat_pad3[b] = to_categorical(np.append([128], features3[i][:-1]).reshape(seq_length, 1), num_classes=ft_p)
             i += 1
             if (i == len(features1)):
                 i=0
@@ -117,14 +121,14 @@ def generatorex(features1, features2, features3, seq_length, ft_o, ft_q, ft_p, m
 stream_list = []
 stream_list_2 = []
 
-for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/Rock_Cleansed/4'):
+for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/Rock_Cleansed/678'):
     for name in files:
         with open(os.path.join(path, name), 'r') as f: 
             reader = csv.reader(f)
             sub_list = [list(map(float,rec)) for rec in csv.reader(f, delimiter=',')]
             stream_list = stream_list + sub_list
             
-for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/Jazz_Cleansed'):
+for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/lastfm/jazz_cleansed'):
     for name in files:
         with open(os.path.join(path, name), 'r') as f: 
             reader = csv.reader(f)
@@ -175,8 +179,7 @@ dtlngth=[len(offs), len(offs_2)]
 n_features_o = int(max_o)*6+2
 n_features_q = int(max_q)*6+2
 n_features_p = 128+1
-seq_length = 4#100 groups of 3
-
+seq_length = 30#100 groups of 3
 dataX1_o = rolling_window(np.asarray(offs), seq_length)
 dataX1_q = rolling_window(np.asarray(qlngth), seq_length)
 dataX1_p = rolling_window(np.asarray(ptch), seq_length)
@@ -241,8 +244,8 @@ n_units = 128
 
 train = load_model("/data/data1/users/el13102/weight/train.h5")
 train_2 = load_model("/data/data1/users/el13102/weight/train_2.h5")
-infenc_tr = load_model("/data/data1/users/el13102/weight/infenc.h5")
-infdec_tr = load_model("/data/data1/users/el13102/weight/infdec.h5")
+#infenc_tr = load_model("/data/data1/users/el13102/weight/127/ohe 40x2-20-540/infenc.h5")
+#infdec_tr = load_model("/data/data1/users/el13102/weight/127/ohe 40x2-20-540/infdec.h5")
 
 encoder_inputs_o = train.input[0]   # input_1 concat
 encoder_inputs_q = train.input[1]
@@ -307,12 +310,12 @@ print(history2)
 # spot check some examples
 ql_to_int = qldir(max_o, True)
 int_to_ql = qldir(max_o, False)
-for i in range(1):
-    i_2 = randint(1, split_i[0])
+for _ in range(0):
+    i = randint(1, split_i[0])
     X1_o = np.reshape(to_categorical([ql_to_int[ql[0]] for ql in dataX1_o[i]], num_classes=n_features_o), (1, seq_length, n_features_o))
     X1_q = np.reshape(to_categorical([ql_to_int[ql[0]] for ql in dataX1_q[i]], num_classes=n_features_q), (1, seq_length, n_features_q))
     X1_p = np.reshape(to_categorical(dataX1_p[i], num_classes=n_features_p), (1, seq_length, n_features_p))
-    target = predict_sequence(infenc_tr, infdec_tr, X1_o, X1_q, X1_p, n_steps_out, n_features_o, n_features_q, n_features_p)
+    target = predict_sequence(infenc, infdec, X1_o, X1_q, X1_p, n_steps_out, n_features_o, n_features_q, n_features_p)
     for j in range(seq_length):
         print('X_o=%s, y_o=%s, X_q=%s, y_q=%s, X_p=%s, y_p=%s' % (
             dataX1_o[i][j], int_to_ql[one_hot_decode([target[3*j]])[0]], 
@@ -347,11 +350,13 @@ for _ in range(0):
 #value_2 = train_2.evaluate(generatorex(dataX1_o_2, dataX1_q_2, dataX1_p_2, seq_length, n_features_o, n_features_q, n_features_p, max_o, max_q, batch_size=540), steps= (dtlngth[0]-split_i[0]) // 540, verbose=2)
 
 
-pred_range = 1
-X_pred_o = []
-X_pred_q = []
-X_pred_p = []
+pred_range = 10000
+number_of_equal_elements = 0
+X_inp = np.array([dataX1_o[:pred_range], dataX1_q[:pred_range], dataX1_p[:pred_range]])
 for i in range(pred_range):
+    X_pred_o = []
+    X_pred_q = []
+    X_pred_p = []
     X1_o = np.reshape(to_categorical([ql_to_int[ql[0]] for ql in dataX1_o[i]], num_classes=n_features_o), (1, seq_length, n_features_o))
     X1_q = np.reshape(to_categorical([ql_to_int[ql[0]] for ql in dataX1_q[i]], num_classes=n_features_q), (1, seq_length, n_features_q))
     X1_p = np.reshape(to_categorical(dataX1_p[i], num_classes=n_features_p), (1, seq_length, n_features_p))
@@ -360,15 +365,18 @@ for i in range(pred_range):
         X_pred_o = X_pred_o + [int_to_ql[one_hot_decode([target[3*j]])[0]]] 
         X_pred_q = X_pred_q + [int_to_ql[one_hot_decode([target[3*j+1]])[0]]] 
         X_pred_p = X_pred_p + [one_hot_decode([target[3*j+2]])]
+    X_pred_o = np.reshape(X_pred_o, (1, seq_length, 1))
+    X_pred_q = np.reshape(X_pred_q, (1, seq_length, 1))
+    X_pred_p = np.reshape(X_pred_p, (1, seq_length, 1))
+    #X_pred = np.array([X_pred_o, X_pred_q, X_pred_p])
+    curpr_o = np.sum(X_inp[0][i]==X_pred_o)
+    curpr_q = np.sum(X_inp[1][i]==X_pred_q)
+    curpr_p = np.sum(X_inp[2][i]==X_pred_p)
+    number_of_equal_elements += (curpr_o + curpr_q + curpr_p)
 
-X_pred_o = np.reshape(X_pred_o, (pred_range, seq_length, 1))
-X_pred_q = np.reshape(X_pred_q, (pred_range, seq_length, 1))
-X_pred_p = np.reshape(X_pred_p, (pred_range, seq_length, 1))
-X_pred = np.array([X_pred_o, X_pred_q, X_pred_p])
-X_inp = np.array([dataX1_o[:pred_range], dataX1_q[:pred_range], dataX1_p[:pred_range]])
+
 print("Evaluating", pred_range)
-print(X_inp, X_pred)
-number_of_equal_elements = np.sum(X_inp==X_pred)
+#print(X_inp, X_pred)
 total_elements = 3*pred_range*seq_length
 percentage = number_of_equal_elements/total_elements
 print('number of identical elements: \t\t{}'.format(number_of_equal_elements))
