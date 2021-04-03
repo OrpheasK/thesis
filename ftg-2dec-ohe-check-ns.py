@@ -121,14 +121,14 @@ def generatorex(features1, features2, features3, seq_length, ft_o, ft_q, ft_p, m
 stream_list = []
 stream_list_2 = []
 
-for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/Rock_Cleansed/678'):
+for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/Rock_Cleansed/19'):
     for name in files:
         with open(os.path.join(path, name), 'r') as f: 
             reader = csv.reader(f)
             sub_list = [list(map(float,rec)) for rec in csv.reader(f, delimiter=',')]
             stream_list = stream_list + sub_list
             
-for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/lastfm/jazz_cleansed'):
+for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/Jazz_Cleansed/20'):
     for name in files:
         with open(os.path.join(path, name), 'r') as f: 
             reader = csv.reader(f)
@@ -350,7 +350,7 @@ for _ in range(0):
 #value_2 = train_2.evaluate(generatorex(dataX1_o_2, dataX1_q_2, dataX1_p_2, seq_length, n_features_o, n_features_q, n_features_p, max_o, max_q, batch_size=540), steps= (dtlngth[0]-split_i[0]) // 540, verbose=2)
 
 
-pred_range = 10000
+pred_range = 1000
 number_of_equal_elements = 0
 X_inp = np.array([dataX1_o[:pred_range], dataX1_q[:pred_range], dataX1_p[:pred_range]])
 for i in range(pred_range):
@@ -372,12 +372,13 @@ for i in range(pred_range):
     curpr_o = np.sum(X_inp[0][i]==X_pred_o)
     curpr_q = np.sum(X_inp[1][i]==X_pred_q)
     curpr_p = np.sum(X_inp[2][i]==X_pred_p)
-    number_of_equal_elements += (curpr_o + curpr_q + curpr_p)
+    number_of_equal_elements += (curpr_q)
+    #if (i%1000==0): print(i)
 
 
 print("Evaluating", pred_range)
 #print(X_inp, X_pred)
-total_elements = 3*pred_range*seq_length
+total_elements = 1*pred_range*seq_length
 percentage = number_of_equal_elements/total_elements
 print('number of identical elements: \t\t{}'.format(number_of_equal_elements))
 print('total number of elements: \t\t{}'.format(total_elements))
