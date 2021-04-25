@@ -17,7 +17,7 @@ from keras.utils import to_categorical
 from keras.models import Model, load_model
 from keras.layers import Input, LSTM, Dense, RepeatVector, TimeDistributed, concatenate
 
-# In[2]:
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'# In[2]:
 
 
 # generate target given source sequence
@@ -211,22 +211,22 @@ dataX1_p_2 = np.reshape(dataX1_p_2, (dtlngth[1] - seq_length + 1, seq_length, 1)
 split_i = [n_patterns[0]*10 // 100, n_patterns[1]*10 // 100]
 
 dataX1_o_v = dataX1_o[-split_i[0]:]
-#dataX1_o = dataX1_o[:-split_i[0]]
+dataX1_o = dataX1_o[:-split_i[0]]
 
 dataX1_q_v = dataX1_q[-split_i[0]:]
-#dataX1_q = dataX1_q[:-split_i[0]]
+dataX1_q = dataX1_q[:-split_i[0]]
 
 dataX1_p_v = dataX1_p[-split_i[0]:]
-#dataX1_p = dataX1_p[:-split_i[0]]
+dataX1_p = dataX1_p[:-split_i[0]]
 
 dataX1_o_v_2 = dataX1_o_2[-split_i[1]:]
-#dataX1_o_2 = dataX1_o_2[:-split_i[1]]
+dataX1_o_2 = dataX1_o_2[:-split_i[1]]
 
 dataX1_q_v_2 = dataX1_q_2[-split_i[1]:]
-#dataX1_q_2 = dataX1_q_2[:-split_i[1]]
+dataX1_q_2 = dataX1_q_2[:-split_i[1]]
 
 dataX1_p_v_2 = dataX1_p_2[-split_i[1]:]
-#dataX1_p_2 = dataX1_p_2[:-split_i[1]]
+dataX1_p_2 = dataX1_p_2[:-split_i[1]]
 
 print ("Validation Patterns: ", split_i)
 
@@ -243,8 +243,9 @@ n_units = 128
 
 train = load_model("/data/spock/data1/users/el13102/weight/train.h5")
 train_2 = load_model("/data/spock/data1/users/el13102/weight/train_2.h5")
-#infenc_tr = load_model("/data/data1/users/el13102/weight/127/ohe 40x2-20-540/infenc.h5")
-#infdec_tr = load_model("/data/data1/users/el13102/weight/127/ohe 40x2-20-540/infdec.h5")
+infenc_tr = load_model("/data/spock/data1/users/el13102/weight/infenc.h5")
+infdec_tr = load_model("/data/spock/data1/users/el13102/weight/infdec.h5")
+infdec_2_tr = load_model("/data/spock/data1/users/el13102/weight/infdec_2.h5")
 
 encoder_inputs_o = train.input[0]   # input_1 concat
 encoder_inputs_q = train.input[1]
@@ -374,7 +375,7 @@ for i in range(0):
     number_of_equal_elements += (curpr_q)
     #if (i%1000==0): print(i)
 
-pred_range = n_patterns[0]-1
+pred_range = n_patterns[0]-split_i[0]
 X_pred_o = []
 X_pred_q = []
 X_pred_p = []
@@ -384,13 +385,13 @@ for i in range(pred_range):
     X1_p = np.reshape(to_categorical(dataX1_p[i], num_classes=n_features_p), (1, seq_length, n_features_p))
     target = predict_sequence(infenc, infdec, X1_o, X1_q, X1_p, n_steps_out, n_features_o, n_features_q, n_features_p)
     for j in range(seq_length):
-        X_pred_o = X_pred_o + [int_to_ql[one_hot_decode([target[3*j]])[0]]] 
+        #X_pred_o = X_pred_o + [int_to_ql[one_hot_decode([target[3*j]])[0]]] 
         X_pred_q = X_pred_q + [int_to_ql[one_hot_decode([target[3*j+1]])[0]]] 
-        X_pred_p = X_pred_p + [one_hot_decode([target[3*j+2]])]
+        #X_pred_p = X_pred_p + [one_hot_decode([target[3*j+2]])]
 
-X_pred_o = np.reshape(X_pred_o, (pred_range, seq_length, 1))
+#X_pred_o = np.reshape(X_pred_o, (pred_range, seq_length, 1))
 X_pred_q = np.reshape(X_pred_q, (pred_range, seq_length, 1))
-X_pred_p = np.reshape(X_pred_p, (pred_range, seq_length, 1))
+#X_pred_p = np.reshape(X_pred_p, (pred_range, seq_length, 1))
 X_pred = np.array(X_pred_q)
 X_inp = np.array(dataX1_q[:pred_range])
 print("Evaluating", pred_range)
