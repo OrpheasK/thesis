@@ -24,7 +24,7 @@ from keras.models import Model, load_model
 from keras.optimizers import Adam
 from keras.layers import Input, LSTM, Dense, RepeatVector, TimeDistributed, concatenate
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+
 # In[2]:
 
 
@@ -111,6 +111,38 @@ def define_models(dim_o, dim_q, dim_p, n_units):
 	# return all models
 	return model, model_2, encoder_model, decoder_model, decoder_model_2
 
+
+# generate target given source sequence
+def predict_sequence(infenc, infdec, src_o, src_q, src_p, n_steps, cardinality_o, cardinality_q, cardinality_p):
+	# encode
+	state = infenc.predict([src_o, src_q, src_p])
+	# start of sequence input
+	target_o = np.array([0.0 for _ in range(cardinality_o)]).reshape(1, 1, cardinality_o)
+	target_q = np.array([0.0 for _ in range(cardinality_q)]).reshape(1, 1, cardinality_q)
+	#target_p = 0
+	target_p = np.array([0.0 for _ in range(cardinality_p)]).reshape(1, 1, cardinality_p)
+	# collect predictions
+	output = list()
+	for t in range(n_steps):
+		# predict next char
+		#print(target_o.shape)
+		#print(target_q.shape)
+		#print(target_p.shape)
+		#print(state[0].shape)
+		o, q, p, h, c = infdec.predict([target_o, target_q, target_p] + state)
+		#print(a)
+		# store prediction
+		output.append(o[0,0,:])
+		output.append(q[0,0,:])
+		output.append(p[0,0,:])
+		# update state
+		state = [h, c]
+		# update target sequence
+		target_o = o
+		target_q = q
+		target_p = p
+	return output
+
 # decode a one hot encoded string
 def one_hot_decode(encoded_seq):
 	return [np.argmax(vector) for vector in encoded_seq]
@@ -176,14 +208,14 @@ def generatorex(features1, features2, features3, seq_length, ft_o, ft_q, ft_p, m
 stream_list = []
 stream_list_2 = []
 
-for path, subdirectories, files in os.walk('/data/spock/data1/users/el13102/midi21txt/Rock_Cleansed/19/5ub'):
+for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/Rock_Cleansed/678'):
     for name in files:
         with open(os.path.join(path, name), 'r') as f: 
             reader = csv.reader(f)
             sub_list = [list(map(float,rec)) for rec in csv.reader(f, delimiter=',')]
             stream_list = stream_list + sub_list
             
-for path, subdirectories, files in os.walk('/data/spock/data1/users/el13102/midi21txt/Jazz_Cleansed/20/5'):
+for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/lastfm/jazz_cleansed'):
     for name in files:
         with open(os.path.join(path, name), 'r') as f: 
             reader = csv.reader(f)
@@ -307,27 +339,28 @@ train_2.compile(optimizer='adam', loss={'tr_out_o_2': 'categorical_crossentropy'
 
 
 # train the two models with alternating epochs
-epochs_c = 40
+epochs_c = 20
 for i in range(epochs_c):
     print ("Epoch", str(i+1)+"_a")
-    history2 = train_2.fit(generatorex(dataX1_o, dataX1_q, dataX1_p, seq_length, n_features_o, n_features_q, n_features_p, max_o, max_q, batch_size=540), steps_per_epoch= (dtlngth[0]-split_i[0]) // 540, verbose=2)
+    history1 = train.fit(generatorex(dataX1_o, dataX1_q, dataX1_p, seq_length, n_features_o, n_features_q, n_features_p, max_o, max_q, batch_size=540), steps_per_epoch= (dtlngth[0]-split_i[0]) // 540, verbose=2)
     print ("Epoch", str(i+1)+"_b")
-    history1 = train.fit(generatorex(dataX1_o_2, dataX1_q_2, dataX1_p_2, seq_length, n_features_o, n_features_q, n_features_p, max_o, max_q, batch_size=540), steps_per_epoch= (dtlngth[1]-split_i[1]) // 540, verbose=2)
+    history2 = train_2.fit(generatorex(dataX1_o_2, dataX1_q_2, dataX1_p_2, seq_length, n_features_o, n_features_q, n_features_p, max_o, max_q, batch_size=540), steps_per_epoch= (dtlngth[1]-split_i[1]) // 540, verbose=2)
+
 
 # In[ ]:
 
 
-train.save("/data/spock/data1/users/el13102/weight/train.h5")
-train_2.save("/data/spock/data1/users/el13102/weight/train_2.h5")
-infenc.save("/data/spock/data1/users/el13102/weight/infenc.h5")
-infdec.save("/data/spock/data1/users/el13102/weight/infdec.h5")
-infdec_2.save("/data/spock/data1/users/el13102/weight/infdec_2.h5")
+train.save("/data/data1/users/el13102/weight/train.h5")
+train_2.save("/data/data1/users/el13102/weight/train_2.h5")
+infenc.save("/data/data1/users/el13102/weight/infenc.h5")
+infdec.save("/data/data1/users/el13102/weight/infdec.h5")
+
 # save:
-f1 = open('/data/spock/data1/users/el13102/weight/history1.pckl', 'wb')
+f1 = open('/data/data1/users/el13102/weight/history1.pckl', 'wb')
 pickle.dump(history1.history, f1)
 f1.close()
 
-f2 = open('/data/spock/data1/users/el13102/weight/history2.pckl', 'wb')
+f2 = open('/data/data1/users/el13102/weight/history2.pckl', 'wb')
 pickle.dump(history2.history, f2)
 f2.close()
 

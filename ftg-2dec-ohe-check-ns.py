@@ -17,7 +17,7 @@ from keras.utils import to_categorical
 from keras.models import Model, load_model
 from keras.layers import Input, LSTM, Dense, RepeatVector, TimeDistributed, concatenate
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '-1'# In[2]:
+# In[2]:
 
 
 # generate target given source sequence
@@ -120,14 +120,14 @@ def generatorex(features1, features2, features3, seq_length, ft_o, ft_q, ft_p, m
 stream_list = []
 stream_list_2 = []
 
-for path, subdirectories, files in os.walk('/data/spock/data1/users/el13102/midi21txt/Rock_Cleansed/19/5ub'):
+for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/Rock_Cleansed/19/5ub'):
     for name in files:
         with open(os.path.join(path, name), 'r') as f: 
             reader = csv.reader(f)
             sub_list = [list(map(float,rec)) for rec in csv.reader(f, delimiter=',')]
             stream_list = stream_list + sub_list
             
-for path, subdirectories, files in os.walk('/data/spock/data1/users/el13102/midi21txt/Jazz_Cleansed/20/5'):
+for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/Jazz_Cleansed/20/5'):
     for name in files:
         with open(os.path.join(path, name), 'r') as f: 
             reader = csv.reader(f)
@@ -241,11 +241,10 @@ n_units = 128
 # In[17]:
 
 
-train = load_model("/data/spock/data1/users/el13102/weight/train.h5")
-train_2 = load_model("/data/spock/data1/users/el13102/weight/train_2.h5")
-infenc_tr = load_model("/data/spock/data1/users/el13102/weight/infenc.h5")
-infdec_tr = load_model("/data/spock/data1/users/el13102/weight/infdec.h5")
-infdec_2_tr = load_model("/data/spock/data1/users/el13102/weight/infdec_2.h5")
+train = load_model("/data/data1/users/el13102/weight/train.h5")
+train_2 = load_model("/data/data1/users/el13102/weight/train_2.h5")
+#infenc_tr = load_model("/data/data1/users/el13102/weight/127/ohe 40x2-20-540/infenc.h5")
+#infdec_tr = load_model("/data/data1/users/el13102/weight/127/ohe 40x2-20-540/infdec.h5")
 
 encoder_inputs_o = train.input[0]   # input_1 concat
 encoder_inputs_q = train.input[1]
@@ -296,10 +295,10 @@ infdec_2 = Model([decoder_inputs_o_2, decoder_inputs_q_2, decoder_inputs_p_2] + 
 
 
 # In[18]:
-f1 = open('/data/spock/data1/users/el13102/weight/history1.pckl', 'rb')
+f1 = open('/data/data1/users/el13102/weight/history1.pckl', 'rb')
 history1 = pickle.load(f1)
 f1.close()
-f2 = open('/data/spock/data1/users/el13102/weight/history2.pckl', 'rb')
+f2 = open('/data/data1/users/el13102/weight/history2.pckl', 'rb')
 history2 = pickle.load(f2)
 f2.close()
 
@@ -375,15 +374,15 @@ for i in range(0):
     number_of_equal_elements += (curpr_q)
     #if (i%1000==0): print(i)
 
-pred_range = n_patterns[0]-split_i[0]
+pred_range = n_patterns[1]-split_i[1]
 X_pred_o = []
 X_pred_q = []
 X_pred_p = []
 for i in range(pred_range):
-    X1_o = np.reshape(to_categorical([ql_to_int[ql[0]] for ql in dataX1_o[i]], num_classes=n_features_o), (1, seq_length, n_features_o))
-    X1_q = np.reshape(to_categorical([ql_to_int[ql[0]] for ql in dataX1_q[i]], num_classes=n_features_q), (1, seq_length, n_features_q))
-    X1_p = np.reshape(to_categorical(dataX1_p[i], num_classes=n_features_p), (1, seq_length, n_features_p))
-    target = predict_sequence(infenc, infdec, X1_o, X1_q, X1_p, n_steps_out, n_features_o, n_features_q, n_features_p)
+    X1_o = np.reshape(to_categorical([ql_to_int[ql[0]] for ql in dataX1_o_2[i]], num_classes=n_features_o), (1, seq_length, n_features_o))
+    X1_q = np.reshape(to_categorical([ql_to_int[ql[0]] for ql in dataX1_q_2[i]], num_classes=n_features_q), (1, seq_length, n_features_q))
+    X1_p = np.reshape(to_categorical(dataX1_p_2[i], num_classes=n_features_p), (1, seq_length, n_features_p))
+    target = predict_sequence(infenc, infdec_2, X1_o, X1_q, X1_p, n_steps_out, n_features_o, n_features_q, n_features_p)
     for j in range(seq_length):
         #X_pred_o = X_pred_o + [int_to_ql[one_hot_decode([target[3*j]])[0]]] 
         X_pred_q = X_pred_q + [int_to_ql[one_hot_decode([target[3*j+1]])[0]]] 
@@ -393,7 +392,7 @@ for i in range(pred_range):
 X_pred_q = np.reshape(X_pred_q, (pred_range, seq_length, 1))
 #X_pred_p = np.reshape(X_pred_p, (pred_range, seq_length, 1))
 X_pred = np.array(X_pred_q)
-X_inp = np.array(dataX1_q[:pred_range])
+X_inp = np.array(dataX1_q_2[:pred_range])
 print("Evaluating", pred_range)
 #print(X_inp, X_pred)
 number_of_equal_elements = np.sum(X_inp==X_pred)
