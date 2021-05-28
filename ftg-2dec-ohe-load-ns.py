@@ -208,14 +208,14 @@ def generatorex(features1, features2, features3, seq_length, ft_o, ft_q, ft_p, m
 stream_list = []
 stream_list_2 = []
 
-for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/Rock_Cleansed/998'):
+for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/Rock_Cleansed/998/678'):
     for name in files:
         with open(os.path.join(path, name), 'r') as f: 
             reader = csv.reader(f)
             sub_list = [list(map(float,rec)) for rec in csv.reader(f, delimiter=',')]
             stream_list = stream_list + sub_list
             
-for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/lastfm/tetr_cleansed'):
+for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/lastfm/jazz_cleansed'):
     for name in files:
         with open(os.path.join(path, name), 'r') as f: 
             reader = csv.reader(f)
@@ -326,10 +326,54 @@ print ("Validation Patterns: ", split_i)
 # configure problem
 n_steps_out = seq_length
 # define models
-train = load_model("/data/data1/users/el13102/weight/ohe 40x2-30-540/train.h5")
-train_2 = load_model("/data/data1/users/el13102/weight/ohe 40x2-30-540/train_2.h5")
+train_tmp = load_model("/data/data1/users/el13102/weight/Rock-Jazz/ohe 20x2-30-540/train.h5")
+train_2_tmp = load_model("/data/data1/users/el13102/weight/Rock-Jazz/ohe 20x2-30-540/train_2.h5")
 
+enc_in_o = train_tmp.input[0]   # input_1 concat
+enc_in_q = train_tmp.input[1]
+enc_in_p = train_tmp.input[2]
+encoder_outputs, state_h_enc, state_c_enc = train_tmp.layers[8].output   # lstm_1
+encoder_states = [state_h_enc, state_c_enc]
 
+infenc = Model([enc_in_o, enc_in_q, enc_in_p], encoder_states)
+
+decoder_inputs_o = train_tmp.input[3]   # input_2 concat
+decoder_inputs_q = train_tmp.input[4]
+decoder_inputs_p = train_tmp.input[5]
+decoder_inputs = train_tmp.layers[7].output
+decoder_lstm = train_tmp.layers[9]
+decoder_outputs, _, _ = decoder_lstm(decoder_inputs, initial_state=encoder_states)
+decoder_dense_o = train_tmp.layers[-3]
+decoder_dense_q = train_tmp.layers[-2]
+decoder_dense_p = train_tmp.layers[-1]
+decoder_outputs_o = decoder_dense_o(decoder_outputs)
+decoder_outputs_q = decoder_dense_q(decoder_outputs)
+decoder_outputs_p = decoder_dense_p(decoder_outputs)
+
+train = Model([enc_in_o, enc_in_q, enc_in_p, decoder_inputs_o, decoder_inputs_q, decoder_inputs_p], [decoder_outputs_o, 
+decoder_outputs_q, decoder_outputs_p])
+
+decoder_inputs_o_2 = train_2_tmp.input[3]   # input_2 concat
+decoder_inputs_q_2 = train_2_tmp.input[4]
+decoder_inputs_p_2 = train_2_tmp.input[5]
+decoder_inputs_2 = train_2_tmp.layers[7].output
+decoder_lstm_2 = train_2_tmp.layers[9]
+decoder_outputs_2, _, _ = decoder_lstm_2(decoder_inputs_2, initial_state=encoder_states)
+decoder_dense_o_2 = train_2_tmp.layers[-3]
+decoder_dense_q_2 = train_2_tmp.layers[-2]
+decoder_dense_p_2 = train_2_tmp.layers[-1]
+decoder_outputs_o_2 = decoder_dense_o_2(decoder_outputs_2)
+decoder_outputs_q_2 = decoder_dense_q_2(decoder_outputs_2)
+decoder_outputs_p_2 = decoder_dense_p_2(decoder_outputs_2)
+
+train_2 = Model([enc_in_o, enc_in_q, enc_in_p, decoder_inputs_o_2, decoder_inputs_q_2, decoder_inputs_p_2], [decoder_outputs_o_2, decoder_outputs_q_2, decoder_outputs_p_2])
+#train = Model([enc_in_o, enc_in_q, enc_in_p, train_tmp.input[3], train_tmp.input[4], train_tmp.input[5]], [train_tmp.output[0], train_tmp.output[1], train_tmp.output[2]])
+#train_2 = Model([enc_in_o, enc_in_q, enc_in_p, train_2_tmp.input[3], train_2_tmp.input[4], train_2_tmp.input[5]], [train_2_tmp.output[0], train_2_tmp.output[1], train_2_tmp.output[2]])
+
+train.compile(optimizer='adam', loss={'tr_out_o': 'categorical_crossentropy', 'tr_out_q': 'categorical_crossentropy', 'tr_out_p': 'categorical_crossentropy'},
+ metrics={'tr_out_o': 'accuracy', 'tr_out_q': 'accuracy', 'tr_out_p': 'accuracy'})
+train_2.compile(optimizer='adam', loss={'tr_out_o_2': 'categorical_crossentropy', 'tr_out_q_2': 'categorical_crossentropy', 'tr_out_p_2': 'categorical_crossentropy'},
+ metrics={'tr_out_o_2': 'accuracy', 'tr_out_q_2': 'accuracy', 'tr_out_p_2': 'accuracy'})
 # In[ ]:
 
 
@@ -347,6 +391,7 @@ for i in range(epochs_c):
 
 train.save("/data/data1/users/el13102/weight/train.h5")
 train_2.save("/data/data1/users/el13102/weight/train_2.h5")
+infenc.save("/data/data1/users/el13102/weight/infenc.h5")
 
 
 # save:
