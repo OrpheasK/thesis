@@ -326,8 +326,8 @@ print ("Validation Patterns: ", split_i)
 # configure problem
 n_steps_out = seq_length
 # define models
-train_tmp = load_model("/data/data1/users/el13102/weight/Rock-Jazz/ohe 20x2-30-540/train.h5")
-train_2_tmp = load_model("/data/data1/users/el13102/weight/Rock-Jazz/ohe 20x2-30-540/train_2.h5")
+train_tmp = load_model("/data/data1/users/el13102/weight/Rock-Jazz/ohe 60x2-30-540/train.h5")
+train_2_tmp = load_model("/data/data1/users/el13102/weight/Rock-Jazz/ohe 60x2-30-540/train_2.h5")
 
 enc_in_o = train_tmp.input[0]   # input_1 concat
 enc_in_q = train_tmp.input[1]
@@ -389,17 +389,17 @@ for i in range(epochs_c):
 # In[ ]:
 
 
-train.save("/data/data1/users/el13102/weight/train.h5")
-train_2.save("/data/data1/users/el13102/weight/train_2.h5")
-infenc.save("/data/data1/users/el13102/weight/infenc.h5")
+train.save("/data/data1/users/el13102/weight/Rock-Jazz/train.h5")
+train_2.save("/data/data1/users/el13102/weight/Rock-Jazz/train_2.h5")
+infenc.save("/data/data1/users/el13102/weight/Rock-Jazz/infenc.h5")
 
 
 # save:
-f1 = open('/data/data1/users/el13102/weight/history1.pckl', 'wb')
+f1 = open('/data/data1/users/el13102/weight/Rock-Jazz/history1.pckl', 'wb')
 pickle.dump(history1.history, f1)
 f1.close()
 
-f2 = open('/data/data1/users/el13102/weight/history2.pckl', 'wb')
+f2 = open('/data/data1/users/el13102/weight/Rock-Jazz/history2.pckl', 'wb')
 pickle.dump(history2.history, f2)
 f2.close()
 
