@@ -208,14 +208,14 @@ def generatorex(features1, features2, features3, seq_length, ft_o, ft_q, ft_p, m
 stream_list = []
 stream_list_2 = []
 
-for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/Rock_Cleansed/998'):
+for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/inC/Rock_Cleansed_inC/998'):
     for name in files:
         with open(os.path.join(path, name), 'r') as f: 
             reader = csv.reader(f)
             sub_list = [list(map(float,rec)) for rec in csv.reader(f, delimiter=',')]
             stream_list = stream_list + sub_list
             
-for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/lastfm/tetr_cleansed'):
+for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/inC/tetr_cleansed_inC'):
     for name in files:
         with open(os.path.join(path, name), 'r') as f: 
             reader = csv.reader(f)
@@ -326,8 +326,8 @@ print ("Validation Patterns: ", split_i)
 # configure problem
 n_steps_out = seq_length
 # define models
-train_tmp = load_model("/data/data1/users/el13102/weight/Rock-Tetr/ohe 90x2-30-540/train.h5")
-train_2_tmp = load_model("/data/data1/users/el13102/weight/Rock-Tetr/ohe 90x2-30-540/train_2.h5")
+train_tmp = load_model("/data/data1/users/el13102/weight/Rock-Tetr inC/ohe 80x2-30-540/train.h5")
+train_2_tmp = load_model("/data/data1/users/el13102/weight/Rock-Tetr inC/ohe 80x2-30-540/train_2.h5")
 
 enc_in_o = train_tmp.input[0]   # input_1 concat
 enc_in_q = train_tmp.input[1]
@@ -389,17 +389,17 @@ for i in range(epochs_c):
 # In[ ]:
 
 
-train.save("/data/data1/users/el13102/weight/Rock-Tetr/train.h5")
-train_2.save("/data/data1/users/el13102/weight/Rock-Tetr/train_2.h5")
-infenc.save("/data/data1/users/el13102/weight/Rock-Tetr/infenc.h5")
+train.save("/data/data1/users/el13102/weight/Rock-Tetr inC/train.h5")
+train_2.save("/data/data1/users/el13102/weight/Rock-Tetr inC/train_2.h5")
+infenc.save("/data/data1/users/el13102/weight/Rock-Tetr inC/infenc.h5")
 
 
 # save:
-f1 = open('/data/data1/users/el13102/weight/Rock-Tetr/history1.pckl', 'wb')
+f1 = open('/data/data1/users/el13102/weight/Rock-Tetr inC/history1.pckl', 'wb')
 pickle.dump(history1.history, f1)
 f1.close()
 
-f2 = open('/data/data1/users/el13102/weight/Rock-Tetr/history2.pckl', 'wb')
+f2 = open('/data/data1/users/el13102/weight/Rock-Tetr inC/history2.pckl', 'wb')
 pickle.dump(history2.history, f2)
 f2.close()
 
