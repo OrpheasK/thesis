@@ -208,14 +208,14 @@ def generatorex(features1, features2, features3, seq_length, ft_o, ft_q, ft_p, m
 stream_list = []
 stream_list_2 = []
 
-for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/Rock_Cleansed/678'):
+for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/Rock_Cleansed/998'):
     for name in files:
         with open(os.path.join(path, name), 'r') as f: 
             reader = csv.reader(f)
             sub_list = [list(map(float,rec)) for rec in csv.reader(f, delimiter=',')]
             stream_list = stream_list + sub_list
             
-for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/lastfm/jazz_cleansed'):
+for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/lastfm/tetr_cleansed'):
     for name in files:
         with open(os.path.join(path, name), 'r') as f: 
             reader = csv.reader(f)
@@ -354,7 +354,7 @@ train.save("/data/data1/users/el13102/weight/train.h5")
 train_2.save("/data/data1/users/el13102/weight/train_2.h5")
 infenc.save("/data/data1/users/el13102/weight/infenc.h5")
 infdec.save("/data/data1/users/el13102/weight/infdec.h5")
-
+infdec_2.save("/data/data1/users/el13102/weight/infdec_2.h5")
 # save:
 f1 = open('/data/data1/users/el13102/weight/history1.pckl', 'wb')
 pickle.dump(history1.history, f1)
