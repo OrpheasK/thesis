@@ -120,14 +120,14 @@ def generatorex(features1, features2, features3, seq_length, ft_o, ft_q, ft_p, m
 stream_list = []
 stream_list_2 = []
 
-for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/Rock_Cleansed/19/5ub'):
+for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/Rock_Cleansed/998/678'):
     for name in files:
         with open(os.path.join(path, name), 'r') as f: 
             reader = csv.reader(f)
             sub_list = [list(map(float,rec)) for rec in csv.reader(f, delimiter=',')]
             stream_list = stream_list + sub_list
             
-for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/Jazz_Cleansed/20/5'):
+for path, subdirectories, files in os.walk('/data/data1/users/el13102/midi21txt/lastfm/jazz_cleansed'):
     for name in files:
         with open(os.path.join(path, name), 'r') as f: 
             reader = csv.reader(f)
@@ -241,10 +241,11 @@ n_units = 128
 # In[17]:
 
 
-train = load_model("/data/data1/users/el13102/weight/train.h5")
-train_2 = load_model("/data/data1/users/el13102/weight/train_2.h5")
-#infenc_tr = load_model("/data/data1/users/el13102/weight/127/ohe 40x2-20-540/infenc.h5")
-#infdec_tr = load_model("/data/data1/users/el13102/weight/127/ohe 40x2-20-540/infdec.h5")
+train = load_model("/data/data1/users/el13102/weight/Rock-Jazz/train.h5")
+train_2 = load_model("/data/data1/users/el13102/weight/Rock-Jazz/train_2.h5")
+#infenc_tr = load_model("/data/data1/users/el13102/weight/infenc.h5")
+#infdec_tr = load_model("/data/data1/users/el13102/weight/infdec.h5")
+#infdec_2_tr = load_model("/data/data1/users/el13102/weight/infdec_2.h5")
 
 encoder_inputs_o = train.input[0]   # input_1 concat
 encoder_inputs_q = train.input[1]
@@ -258,8 +259,8 @@ decoder_inputs_o = train.input[3]   # input_2 concat
 decoder_inputs_q = train.input[4]
 decoder_inputs_p = train.input[5]
 decoder_inputs = train.layers[7].output
-decoder_state_input_h = Input(shape=(n_units,), name='input_12')
-decoder_state_input_c = Input(shape=(n_units,), name='input_13')
+decoder_state_input_h = Input(shape=(n_units,), name='input_20')
+decoder_state_input_c = Input(shape=(n_units,), name='input_21')
 decoder_states_inputs = [decoder_state_input_h, decoder_state_input_c]
 decoder_lstm = train.layers[9]
 decoder_outputs, state_h_dec, state_c_dec = decoder_lstm(decoder_inputs, initial_state=decoder_states_inputs)
@@ -277,8 +278,8 @@ decoder_inputs_o_2 = train_2.input[3]   # input_2 concat
 decoder_inputs_q_2 = train_2.input[4] 
 decoder_inputs_p_2 = train_2.input[5] 
 decoder_inputs_2 = train_2.layers[7].output
-decoder_state_input_h_2 = Input(shape=(n_units,), name='input_14')
-decoder_state_input_c_2 = Input(shape=(n_units,), name='input_15')
+decoder_state_input_h_2 = Input(shape=(n_units,), name='input_22')
+decoder_state_input_c_2 = Input(shape=(n_units,), name='input_23')
 decoder_states_inputs_2 = [decoder_state_input_h_2, decoder_state_input_c_2]
 decoder_lstm_2 = train_2.layers[9]
 decoder_outputs_2, state_h_dec_2, state_c_dec_2 = decoder_lstm_2(decoder_inputs_2, initial_state=decoder_states_inputs_2)
@@ -295,10 +296,10 @@ infdec_2 = Model([decoder_inputs_o_2, decoder_inputs_q_2, decoder_inputs_p_2] + 
 
 
 # In[18]:
-f1 = open('/data/data1/users/el13102/weight/history1.pckl', 'rb')
+f1 = open('/data/data1/users/el13102/weight/Rock-Jazz/history1.pckl', 'rb')
 history1 = pickle.load(f1)
 f1.close()
-f2 = open('/data/data1/users/el13102/weight/history2.pckl', 'rb')
+f2 = open('/data/data1/users/el13102/weight/Rock-Jazz/history2.pckl', 'rb')
 history2 = pickle.load(f2)
 f2.close()
 
@@ -331,15 +332,15 @@ ql_to_int = qldir(max_o, True)
 int_to_ql = qldir(max_o, False)
 for _ in range(0):
     i = randint(1, split_i[1])
-    X1_o = np.reshape(to_categorical([ql_to_int[ql[0]] for ql in dataX1_o_v_2[i]], num_classes=n_features_o), (1, seq_length, n_features_o))
-    X1_q = np.reshape(to_categorical([ql_to_int[ql[0]] for ql in dataX1_q_v_2[i]], num_classes=n_features_q), (1, seq_length, n_features_q))
-    X1_p = np.reshape(to_categorical(dataX1_p_v_2[i], num_classes=n_features_p), (1, seq_length, n_features_p))
+    X1_o = np.reshape(to_categorical([ql_to_int[ql[0]] for ql in dataX1_o_2[i]], num_classes=n_features_o), (1, seq_length, n_features_o))
+    X1_q = np.reshape(to_categorical([ql_to_int[ql[0]] for ql in dataX1_q_2[i]], num_classes=n_features_q), (1, seq_length, n_features_q))
+    X1_p = np.reshape(to_categorical(dataX1_p_2[i], num_classes=n_features_p), (1, seq_length, n_features_p))
     target = predict_sequence(infenc, infdec_2, X1_o, X1_q, X1_p, n_steps_out, n_features_o, n_features_q, n_features_p)
     for j in range(seq_length):
         print('X_o=%s, y_o=%s, X_q=%s, y_q=%s, X_p=%s, y_p=%s' % (
-            dataX1_o_v_2[i][j], int_to_ql[one_hot_decode([target[3*j]])[0]], 
-            dataX1_q_v_2[i][j], int_to_ql[one_hot_decode([target[3*j+1]])[0]], 
-            dataX1_p_v_2[i][j], one_hot_decode([target[3*j+2]])))
+            dataX1_o_2[i][j], int_to_ql[one_hot_decode([target[3*j]])[0]], 
+            dataX1_q_2[i][j], int_to_ql[one_hot_decode([target[3*j+1]])[0]], 
+            dataX1_p_2[i][j], one_hot_decode([target[3*j+2]])))
     print()
 
 
@@ -349,36 +350,37 @@ for _ in range(0):
 #value_2 = train_2.evaluate(generatorex(dataX1_o_2, dataX1_q_2, dataX1_p_2, seq_length, n_features_o, n_features_q, n_features_p, max_o, max_q, batch_size=540), steps= (dtlngth[0]-split_i[0]) // 540, verbose=2)
 
 
-pred_range = 10
+pred_range = 10000
 number_of_equal_elements = 0
-X_inp = np.array([dataX1_o[:pred_range], dataX1_q[:pred_range], dataX1_p[:pred_range]])
-for i in range(0):
+
+for _ in range(pred_range):
+    i = randint(0, split_i[1])
     X_pred_o = []
     X_pred_q = []
     X_pred_p = []
-    X1_o = np.reshape(to_categorical([ql_to_int[ql[0]] for ql in dataX1_o[i]], num_classes=n_features_o), (1, seq_length, n_features_o))
-    X1_q = np.reshape(to_categorical([ql_to_int[ql[0]] for ql in dataX1_q[i]], num_classes=n_features_q), (1, seq_length, n_features_q))
-    X1_p = np.reshape(to_categorical(dataX1_p[i], num_classes=n_features_p), (1, seq_length, n_features_p))
-    target = predict_sequence(infenc, infdec, X1_o, X1_q, X1_p, n_steps_out, n_features_o, n_features_q, n_features_p)
+    X1_o = np.reshape(to_categorical([ql_to_int[ql[0]] for ql in dataX1_o_2[i]], num_classes=n_features_o), (1, seq_length, n_features_o))
+    X1_q = np.reshape(to_categorical([ql_to_int[ql[0]] for ql in dataX1_q_2[i]], num_classes=n_features_q), (1, seq_length, n_features_q))
+    X1_p = np.reshape(to_categorical(dataX1_p_2[i], num_classes=n_features_p), (1, seq_length, n_features_p))
+    target = predict_sequence(infenc, infdec_2, X1_o, X1_q, X1_p, n_steps_out, n_features_o, n_features_q, n_features_p)
     for j in range(seq_length):
         X_pred_o = X_pred_o + [int_to_ql[one_hot_decode([target[3*j]])[0]]] 
-        X_pred_q = X_pred_q + [int_to_ql[one_hot_decode([target[3*j+1]])[0]]] 
-        X_pred_p = X_pred_p + [one_hot_decode([target[3*j+2]])]
+        #X_pred_q = X_pred_q + [int_to_ql[one_hot_decode([target[3*j+1]])[0]]] 
+        #X_pred_p = X_pred_p + [one_hot_decode([target[3*j+2]])]
     X_pred_o = np.reshape(X_pred_o, (1, seq_length, 1))
-    X_pred_q = np.reshape(X_pred_q, (1, seq_length, 1))
-    X_pred_p = np.reshape(X_pred_p, (1, seq_length, 1))
+    #X_pred_q = np.reshape(X_pred_q, (1, seq_length, 1))
+    #X_pred_p = np.reshape(X_pred_p, (1, seq_length, 1))
     #X_pred = np.array([X_pred_o, X_pred_q, X_pred_p])
-    curpr_o = np.sum(X_inp[0][i]==X_pred_o)
-    curpr_q = np.sum(X_inp[1][i]==X_pred_q)
-    curpr_p = np.sum(X_inp[2][i]==X_pred_p)
-    number_of_equal_elements += (curpr_q)
+    curpr_o = np.sum(dataX1_o_2[i]==X_pred_o)
+    #curpr_q = np.sum(dataX1_q_2[i]==X_pred_q)
+    #curpr_p = np.sum(dataX1_p[i]==X_pred_p)
+    number_of_equal_elements += (curpr_o)
     #if (i%1000==0): print(i)
 
-pred_range = n_patterns[1]-split_i[1]
+#pred_range = n_patterns[1]-split_i[1]
 X_pred_o = []
 X_pred_q = []
 X_pred_p = []
-for i in range(pred_range):
+for i in range(0):
     X1_o = np.reshape(to_categorical([ql_to_int[ql[0]] for ql in dataX1_o_2[i]], num_classes=n_features_o), (1, seq_length, n_features_o))
     X1_q = np.reshape(to_categorical([ql_to_int[ql[0]] for ql in dataX1_q_2[i]], num_classes=n_features_q), (1, seq_length, n_features_q))
     X1_p = np.reshape(to_categorical(dataX1_p_2[i], num_classes=n_features_p), (1, seq_length, n_features_p))
@@ -389,13 +391,13 @@ for i in range(pred_range):
         #X_pred_p = X_pred_p + [one_hot_decode([target[3*j+2]])]
 
 #X_pred_o = np.reshape(X_pred_o, (pred_range, seq_length, 1))
-X_pred_q = np.reshape(X_pred_q, (pred_range, seq_length, 1))
+#X_pred_q = np.reshape(X_pred_q, (pred_range, seq_length, 1))
 #X_pred_p = np.reshape(X_pred_p, (pred_range, seq_length, 1))
-X_pred = np.array(X_pred_q)
-X_inp = np.array(dataX1_q_2[:pred_range])
-print("Evaluating", pred_range)
+#X_pred = np.array(X_pred_q)
+#X_inp = np.array(dataX1_q_2[:pred_range])
+print("Evaluating {} o_2".format(pred_range))
 #print(X_inp, X_pred)
-number_of_equal_elements = np.sum(X_inp==X_pred)
+#number_of_equal_elements = np.sum(X_inp==X_pred)
 total_elements = 1*pred_range*seq_length
 percentage = number_of_equal_elements/total_elements
 print('number of identical elements: \t\t{}'.format(number_of_equal_elements))
