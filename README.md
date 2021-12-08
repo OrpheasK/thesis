@@ -13,7 +13,7 @@ The approach presented in this thesis differs from the previous ones to the exte
   <i> Similarly to sheet music, MIDI files can be considered to contain a set of instructions for the performance of music by digital instruments</i>
 </p>
 
-The process we followed was to choose to simplify the encoding of information in a format sufficient to train a neural network with deep machine learning architectures. We organized experiments with a generic autoencoder model using separate decoders for each genre and a universal encoder. The model follows the protocol of an ordinary encoder-decoder model which is a way of organizing recurrent neural networks (RNN) for use in sequence-to-sequence prediction problems using LSTMs with multiple layers. A Teacher Forcing strategy was used to optimise the production of useful results. 
+The process followed was to simplify the encoding of information in a format sufficient to train a neural network with deep learning architecture. The experiments were put forward with an adapted autoencoder model, using separate decoders for each genre and a universal encoder. The model follows the protocol of an ordinary encoder-decoder model which is a way of organizing recurrent neural networks (RNN) for use in sequence-to-sequence prediction problems using LSTMs with multiple layers. A Teacher Forcing strategy was used to optimise the production of useful results. [(Full model in Python, written using the Keras-Tensorflow libraries)](https://github.com/OrpheasK/thesis/blob/main/models/ftg-2dec-ohe-ns.py)
 
 <p align="center">
   <img src="https://github.com/OrpheasK/thesis/blob/main/var/model%202%20eng.png" />
