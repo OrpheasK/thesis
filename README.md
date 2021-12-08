@@ -5,6 +5,11 @@ production and analysis of works. A potentially feasible tool is to transfer mus
 
 The approach presented in this thesis differs from the previous ones to the extent that it chooses to work with MIDI, which are symbolic data files that provide similar information to sheet music. This option requires the analysis of music at a compositional level, as variables that appear in sound files, such as timbre, are absent. As such, besides the obvious use for creative experimentation, such a transfer could offer more concrete information on the compositional differences between genres.
 
+<p align="center">
+  <img src="https://github.com/OrpheasK/thesis/blob/main/var/sheet-music.jpg"  width="32%" />
+  <img src="https://github.com/OrpheasK/thesis/blob/main/var/unnamed.jpg"  width="38%" />
+</p>
+
 The process we followed was to choose to simplify the encoding of information in a format sufficient to train a neural network with deep machine learning architectures. We organized experiments with a generic autoencoder model using separate decoders for each genre and a universal encoder. The model follows the protocol of an ordinary encoder-decoder model which is a way of organizing recurrent neural networks (RNN) for use in sequence-to-sequence prediction problems using LSTMs with multiple layers. A Teacher Forcing strategy was used to optimise the production of useful results. 
 
 <p align="center">
